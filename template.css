@@ -1,0 +1,11 @@
+.controls {
+  grid-template-columns: minmax(170px, 240px) 1fr minmax(145px, 190px) minmax(170px, 220px);
+}
+
+.empty-state {
+  display: grid;
+  min-height: 240px;
+  place-items: center;
+  color: var(--muted);
+  text-align: center;
+}
