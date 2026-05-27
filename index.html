@@ -3,37 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Experimental Daily Country GPR</title>
-    <link rel="stylesheet" href="../style.css" />
-    <link rel="stylesheet" href="template.css" />
+    <title>AI Geopolitical Risk Index</title>
+    <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   </head>
   <body>
     <header class="site-header">
       <div>
-        <p class="eyebrow">TDM Studio prototype</p>
-        <h1>Experimental Daily Country GPR</h1>
+        <p class="eyebrow">Interactive research dashboard</p>
+        <h1>AI Geopolitical Risk Index</h1>
       </div>
       <div class="metric">
-        <span>Selected index</span>
-        <strong id="selected-value">...</strong>
-        <small id="latest-date">No custom data loaded</small>
+        <span>Global AI GPR</span>
+        <strong id="global-value">...</strong>
+        <small id="latest-date">Data through ...</small>
       </div>
     </header>
 
     <main>
-      <section class="controls" aria-label="Prototype controls">
-        <label for="date-slider">
-          Date
-          <span id="selected-date">No data</span>
+      <section class="controls" aria-label="Map controls">
+        <label for="month-slider">
+          Month
+          <span id="selected-month">...</span>
         </label>
-        <input id="date-slider" type="range" min="0" max="0" value="0" disabled />
-        <select id="date-select" aria-label="Select date" disabled></select>
+        <input id="month-slider" type="range" min="0" max="0" value="0" />
+        <select id="month-select" aria-label="Select month"></select>
         <div class="scale-control">
           <label for="map-mode">Map view</label>
           <select id="map-mode" aria-label="Map view">
-            <option value="index">Index</option>
-            <option value="share">Raw share</option>
+            <option value="percentile">Own-history percentile</option>
+            <option value="raw">Raw country GPR</option>
+          </select>
+        </div>
+        <div class="scale-control">
+          <label for="event-select">Event shortcut</label>
+          <select id="event-select" aria-label="Event shortcut">
+            <option value="">Choose event</option>
           </select>
         </div>
       </section>
@@ -44,30 +49,58 @@
         </div>
         <aside class="side-panel">
           <div class="selected-country">
-            <span id="selected-country-name">Prototype</span>
-            <strong id="selected-country-value">Waiting</strong>
-            <small id="selected-country-series">tdm/data.csv</small>
+            <span id="selected-country-name">USA</span>
+            <strong id="selected-country-value">...</strong>
+            <small id="selected-country-series">USA_all</small>
           </div>
           <h2>Highest country risk</h2>
           <table>
             <thead>
               <tr>
                 <th>Country</th>
-                <th id="value-heading">Index</th>
+                <th id="value-heading">Value</th>
               </tr>
             </thead>
-            <tbody id="top-countries">
-              <tr>
-                <td colspan="2">No custom TDM data loaded yet.</td>
-              </tr>
-            </tbody>
+            <tbody id="top-countries"></tbody>
           </table>
         </aside>
       </section>
 
+      <section class="market-panel">
+        <div class="section-head">
+          <div>
+            <h2 id="market-title">Event market reaction</h2>
+            <p id="market-meta">Choose an event shortcut to show G7 and E7 stock-index moves.</p>
+          </div>
+          <div class="market-mode">
+            <label for="market-mode">Market data</label>
+            <select id="market-mode" aria-label="Market data">
+              <option value="monthly">Monthly return</option>
+              <option value="event">Event window</option>
+            </select>
+            <span id="market-window">Month close to month close</span>
+          </div>
+        </div>
+        <table class="market-table">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Country</th>
+              <th>Index</th>
+              <th>Change</th>
+              <th>Window</th>
+            </tr>
+          </thead>
+          <tbody id="market-reactions"></tbody>
+        </table>
+        <p class="source-note">
+          Stock-index data is from Yahoo Finance daily closes. Monthly return compares the previous month-end close with the selected month-end close. Event window compares the previous available close before the event date with the fifth available trading close on or after the event date.
+        </p>
+      </section>
+
       <section class="charts">
         <div>
-          <h2>Daily index over time</h2>
+          <h2>Global index over time</h2>
           <div id="global-chart" class="small-chart"></div>
         </div>
         <div>
@@ -77,11 +110,12 @@
       </section>
 
       <section class="note">
-        <h2>Prototype method</h2>
+        <h2>How to read this</h2>
         <p>
-          This blank page is reserved for your own TDM Studio output. Version 1 will use daily counts:
-          country-associated GPR articles divided by total articles that day. Upload derived aggregate data only;
-          do not publish article text.
+          Percentile compares each country with its own past, not with other countries.
+          A value of 99 pct means that country is higher than about 99% of its own monthly history.
+          Raw country GPR shows the original <strong>_all</strong> values, and the global line uses <strong>GPR_AI</strong>.
+          Data source: <a href="https://www.matteoiacoviello.com/ai_gpr.html#downloads">Iacoviello and Tong AI-GPR downloads</a>.
         </p>
       </section>
     </main>

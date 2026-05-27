@@ -1,0 +1,31 @@
+name: Update AI-GPR data
+
+on:
+  schedule:
+    - cron: "20 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out site
+        uses: actions/checkout@v4
+
+      - name: Download latest data
+        run: python scripts/update_data.py
+
+      - name: Commit data update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.csv market_reactions.json market_monthly.json
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "Update AI-GPR country data"
+            git push
+          fi
