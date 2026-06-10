@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Geopolitical Risk Index</title>
+    <title>GPR Index Dashboard</title>
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   </head>
@@ -11,10 +11,10 @@
     <header class="site-header">
       <div>
         <p class="eyebrow">Interactive research dashboard</p>
-        <h1>AI Geopolitical Risk Index</h1>
+        <h1>GPR Index Dashboard</h1>
       </div>
       <div class="metric">
-        <span>Global AI GPR</span>
+        <span>Global GPR</span>
         <strong id="global-value">...</strong>
         <small id="latest-date">Data through ...</small>
       </div>
@@ -27,13 +27,9 @@
           <span id="selected-month">...</span>
         </label>
         <input id="month-slider" type="range" min="0" max="0" value="0" />
-        <select id="month-select" aria-label="Select month"></select>
-        <div class="scale-control">
-          <label for="map-mode">Map view</label>
-          <select id="map-mode" aria-label="Map view">
-            <option value="percentile">Own-history percentile</option>
-            <option value="raw">Raw country GPR</option>
-          </select>
+        <div class="select-control select-control-blank">
+          <label for="month-select">Month selector</label>
+          <select id="month-select" aria-label="Select month"></select>
         </div>
         <div class="scale-control">
           <label for="event-select">Event shortcut</label>
@@ -58,7 +54,8 @@
             <thead>
               <tr>
                 <th>Country</th>
-                <th id="value-heading">Value</th>
+                <th id="value-heading">Percentile</th>
+                <th>Raw</th>
               </tr>
             </thead>
             <tbody id="top-countries"></tbody>
@@ -72,14 +69,7 @@
             <h2 id="market-title">Event market reaction</h2>
             <p id="market-meta">Choose an event shortcut to show G7 and E7 stock-index moves.</p>
           </div>
-          <div class="market-mode">
-            <label for="market-mode">Market data</label>
-            <select id="market-mode" aria-label="Market data">
-              <option value="monthly">Monthly return</option>
-              <option value="event">Event window</option>
-            </select>
-            <span id="market-window">Month close to month close</span>
-          </div>
+          <p id="market-window" class="market-window">Month close to month close</p>
         </div>
         <table class="market-table">
           <thead>
@@ -114,8 +104,8 @@
         <p>
           Percentile compares each country with its own past, not with other countries.
           A value of 99 pct means that country is higher than about 99% of its own monthly history.
-          Raw country GPR shows the original <strong>_all</strong> values, and the global line uses <strong>GPR_AI</strong>.
-          Data source: <a href="https://www.matteoiacoviello.com/ai_gpr.html#downloads">Iacoviello and Tong AI-GPR downloads</a>.
+          Raw country GPR stays visible as context, and the global line uses the monthly global GPR series.
+          Data source: <a href="https://www.matteoiacoviello.com/ai_gpr.html#downloads">Iacoviello and Tong GPR downloads</a>.
         </p>
       </section>
     </main>

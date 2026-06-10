@@ -169,8 +169,6 @@ const state = {
   marketReactions: [],
   marketMonthly: {},
   absoluteMax: 1,
-  mapMode: "percentile",
-  marketMode: "monthly",
   selectedIndex: 0,
   selectedEventId: null,
   selectedCountry: null,
@@ -183,7 +181,6 @@ const els = {
   selectedMonth: document.querySelector("#selected-month"),
   monthSlider: document.querySelector("#month-slider"),
   monthSelect: document.querySelector("#month-select"),
-  mapMode: document.querySelector("#map-mode"),
   eventSelect: document.querySelector("#event-select"),
   topCountries: document.querySelector("#top-countries"),
   valueHeading: document.querySelector("#value-heading"),
@@ -193,7 +190,6 @@ const els = {
   selectedCountrySeries: document.querySelector("#selected-country-series"),
   marketTitle: document.querySelector("#market-title"),
   marketMeta: document.querySelector("#market-meta"),
-  marketMode: document.querySelector("#market-mode"),
   marketWindow: document.querySelector("#market-window"),
   marketReactions: document.querySelector("#market-reactions"),
 };
@@ -273,38 +269,20 @@ function getMapPoints(row, index) {
 function getMapPoint(country, row, index) {
   const raw = numeric(row[country.column]);
   const stats = state.countryStats.get(country.name);
-  let value = raw;
-  let shortValue = formatNumber(raw);
-  let displayValue = `Raw country GPR: ${formatNumber(raw)}`;
-  let detail = "Raw _all level";
-
-  if (state.mapMode === "percentile") {
-    value = percentileRank(stats.sorted, raw);
-    shortValue = `${formatNumber(value)} pct`;
-    displayValue = `Own-history percentile: ${formatNumber(value)}`;
-    detail = "Compared with this country's full sample";
-  }
+  const percentile = percentileRank(stats.sorted, raw);
 
   return {
     country,
     raw,
-    value,
-    shortValue,
-    displayValue,
-    detail,
+    percentile,
+    value: percentile,
+    shortValue: `${formatNumber(percentile)} pct`,
+    displayValue: `Own-history percentile: ${formatNumber(percentile)}`,
+    detail: "Compared with this country's full sample",
   };
 }
 
 function mapViewConfig() {
-  if (state.mapMode === "raw") {
-    return {
-      legend: "Raw _all",
-      tableHeading: "Raw",
-      zmin: 0,
-      zmax: state.absoluteMax,
-    };
-  }
-
   return {
     legend: "Own-history<br>percentile",
     tableHeading: "Percentile",
@@ -339,46 +317,30 @@ function setupControls() {
   els.eventSelect.appendChild(eventOptions);
 
   els.monthSlider.addEventListener("input", (event) => {
-    state.marketMode = "monthly";
-    els.marketMode.value = state.marketMode;
     updateMonth(Number(event.target.value));
   });
 
   els.monthSelect.addEventListener("change", (event) => {
-    state.marketMode = "monthly";
-    els.marketMode.value = state.marketMode;
     updateMonth(Number(event.target.value));
   });
 
   els.eventSelect.addEventListener("change", (event) => {
-    if (!event.target.value) return;
+    if (!event.target.value) {
+      updateMonth(state.selectedIndex);
+      return;
+    }
     const selectedEvent = findMarketEvent(event.target.value);
     if (!selectedEvent) return;
     const index = state.dates.indexOf(selectedEvent.month);
     if (index === -1) return;
-    state.marketMode = "event";
-    els.marketMode.value = state.marketMode;
     updateMonth(index, selectedEvent.id);
   });
 
-  els.mapMode.addEventListener("change", (event) => {
-    state.mapMode = event.target.value;
-    renderMap(state.rows[state.selectedIndex]);
-    renderTopCountries(state.rows[state.selectedIndex]);
-    renderSelectedCountryValue(state.rows[state.selectedIndex]);
-  });
-
-  els.marketMode.addEventListener("change", (event) => {
-    state.marketMode = event.target.value;
-    renderMarketReactions();
-  });
 }
 
 function syncEventSelect(index, eventId = null) {
   const selectedDate = state.dates[index];
-  const matchingEvent = eventId
-    ? findMarketEvent(eventId)
-    : state.marketReactions.find((event) => event.month === selectedDate);
+  const matchingEvent = eventId ? findMarketEvent(eventId) : null;
   state.selectedEventId = matchingEvent?.month === selectedDate ? matchingEvent.id : null;
   els.eventSelect.value = state.selectedEventId || "";
 }
@@ -420,7 +382,7 @@ function renderMap(row) {
     ]),
     colorscale: [
       [0, "#f7eee7"],
-      [0.25, "#edc3a5"],
+      [0.25, "#f2d5c0"],
       [0.5, "#df855e"],
       [0.75, "#c84b36"],
       [1, "#7f1d1d"],
@@ -485,7 +447,11 @@ function renderTopCountries(row) {
   top.forEach((point) => {
     const tr = document.createElement("tr");
     tr.classList.toggle("is-selected", point.country.name === state.selectedCountry?.name);
-    tr.innerHTML = `<td>${point.country.name}</td><td>${point.shortValue}</td>`;
+    tr.innerHTML = `
+      <td>${point.country.name}</td>
+      <td>${point.shortValue}</td>
+      <td>${formatNumber(point.raw)}</td>
+    `;
     tr.addEventListener("click", () => {
       selectCountry(point.country);
     });
@@ -510,20 +476,13 @@ function renderSelectedCountryValue(row) {
 }
 
 function renderMarketReactions() {
-  if (state.marketMode === "monthly") {
+  const event = findMarketEvent(state.selectedEventId);
+  if (!event) {
     renderMonthlyMarketReturns();
     return;
   }
 
-  const event = findMarketEvent(state.selectedEventId);
   els.marketReactions.innerHTML = "";
-
-  if (!event) {
-    els.marketTitle.textContent = "Event market reaction";
-    els.marketMeta.textContent = "Choose an event shortcut to show the event-window reaction.";
-    els.marketWindow.textContent = "Previous close to fifth trading close";
-    return;
-  }
 
   els.marketTitle.textContent = event.label;
   els.marketMeta.textContent = `${formatExactDate(event.date)} | GPR map month: ${formatMonth(event.month)}`;
@@ -597,7 +556,7 @@ function renderGlobalChart() {
     type: "scatter",
     mode: "lines",
     line: { color: "#1f6f78", width: 2 },
-    hovertemplate: "%{x|%b %Y}<br>Global AI GPR: %{y:.2f}<extra></extra>",
+    hovertemplate: "%{x|%b %Y}<br>Global GPR: %{y:.2f}<extra></extra>",
   };
 
   const marker = {
@@ -609,7 +568,7 @@ function renderGlobalChart() {
     hovertemplate: "%{x|%b %Y}<br>Selected: %{y:.2f}<extra></extra>",
   };
 
-  Plotly.react("global-chart", [trace, marker], smallLayout("Global AI GPR"), smallConfig());
+  Plotly.react("global-chart", [trace, marker], smallLayout("Global GPR"), smallConfig());
 }
 
 function renderGlobalMarker(row) {
@@ -691,14 +650,27 @@ function buildCountryStats(rows, countries) {
   countries.forEach((country) => {
     const values = rows.map((row) => numeric(row[country.column]));
     const sorted = [...values].sort((a, b) => a - b);
+    const mean = values.reduce((sum, value) => sum + value, 0) / Math.max(1, values.length);
+    const variance =
+      values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / Math.max(1, values.length);
 
     stats.set(country.name, {
       values,
       sorted,
+      mean,
+      median: medianValue(sorted),
+      sd: Math.sqrt(variance),
     });
   });
 
   return stats;
+}
+
+function medianValue(sorted) {
+  if (!sorted.length) return 0;
+  const middle = Math.floor(sorted.length / 2);
+  if (sorted.length % 2) return sorted[middle];
+  return (sorted[middle - 1] + sorted[middle]) / 2;
 }
 
 function percentileRank(sorted, value) {

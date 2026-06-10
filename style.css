@@ -108,7 +108,7 @@ h2 {
 
 .controls {
   display: grid;
-  grid-template-columns: minmax(170px, 240px) 1fr minmax(145px, 190px) minmax(170px, 220px) minmax(210px, 280px);
+  grid-template-columns: minmax(170px, 240px) 1fr minmax(145px, 190px) minmax(210px, 280px);
   align-items: center;
   gap: 18px;
   padding: 14px;
@@ -149,9 +149,14 @@ select {
   font: inherit;
 }
 
-.scale-control label {
+.scale-control label,
+.select-control label {
   display: block;
   margin-bottom: 6px;
+}
+
+.select-control-blank label {
+  visibility: hidden;
 }
 
 .dashboard {
@@ -183,6 +188,15 @@ select {
 
 .side-panel {
   padding: 18px;
+}
+
+.side-panel table {
+  font-size: 0.86rem;
+}
+
+.side-panel th:nth-child(3),
+.side-panel td:nth-child(3) {
+  text-align: right;
 }
 
 .selected-country {
@@ -260,23 +274,15 @@ tbody tr.is-selected {
 }
 
 .section-head span,
+.market-window,
 .source-note {
   color: var(--muted);
   font-size: 0.82rem;
 }
 
-.market-mode {
+.market-window {
   min-width: 220px;
-}
-
-.market-mode label {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.market-mode span {
-  display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   text-align: right;
 }
 
